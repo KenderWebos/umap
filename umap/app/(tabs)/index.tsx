@@ -1,45 +1,34 @@
-import React from "react";
-//a
-import { View, Image, StyleSheet, Platform } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, ImageBackground, ScrollView, StyleSheet, Linking, Button} from "react-native";
+import eventService from "../../api/eventService";
+import { Evento } from "../../types/evento";
 
-import { HelloWave } from "@/components/HelloWave";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-
-import { WebView } from "react-native-webview";
+import Frame, { FrameContextConsumer } from 'react-frame-component';
 
 export default function HomeScreen() {
+  const [eventos, setEventos] = useState<Evento[]>([]);
+
+  useEffect(() => {
+    const fetchEventos = async () => {
+      try {
+        const data = await eventService.getEvents();
+        setEventos(data);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
+
+    fetchEventos();
+  }, []);
+
+  const openURL = () => {
+    Linking.openURL('https://kevincampos.cl/umap');
+  }
+
   return (
-    <View
-    >
-      {/* <Image source={{uri: 'https://kevincampos.cl/images/heritech/ht_logo.png'}}
-       style={{width: 1000, height: 400}} /> */}
-
-      {/* <WebView
-        source={{ uri: "https://kevincampos.cl/umap" }}
-      /> */}
-
-      {/* <WebView source={{ uri: "https://www.google.com" }} /> */}
-    </View>
+    <ScrollView>
+      <Text>Bienvenidos a UMAP!</Text>
+      <Button title="Abrir Página Web" onPress={openURL} />
+    </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
-  },
-});

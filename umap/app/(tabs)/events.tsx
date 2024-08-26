@@ -1,79 +1,93 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, FlatList, View, Platform, Image } from 'react-native';
+import React, { useEffect, useState } from "react";
+import { View, Text, ImageBackground, ScrollView, StyleSheet } from "react-native";
+import eventService from "../../api/eventService";
+import { Evento } from "../../types/evento";
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-
-// Define la interfaz para los eventos
-interface Evento {
-  id: number;
-  titulo: string;
-  descripcion: string;
-  fecha: string; // Usa string para la fecha si es una cadena ISO o similar
-  duracion: number; // Asume que la duración es un número en minutos
-}
-
-export default function EventsScreen() {
-  const [events, setEvents] = useState<Evento[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default function HomeScreen() {
+  const [eventos, setEventos] = useState<Evento[]>([]);
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchEventos = async () => {
       try {
-        const response = await axios.get<Evento[]>('https://kevincampos.cl/api/v1/evento');
-        setEvents(response.data);
-      } catch (err) {
-        setError('Error al cargar eventos');
-      } finally {
-        setLoading(false);
+        const data = await eventService.getEvents();
+        setEventos(data);
+      } catch (error) {
+        console.error("Error fetching events:", error);
       }
     };
 
-    fetchEvents();
+    fetchEventos();
   }, []);
 
-  if (loading) return <ThemedText>Cargando eventos...</ThemedText>;
-  if (error) return <ThemedText>{error}</ThemedText>;
-
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={<Ionicons size={310} name="location" style={styles.headerImage} />}
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Eventos UCSC</ThemedText>
-      </ThemedView>
-      <FlatList
-        data={events}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <Collapsible title={item.titulo}>
-            <ThemedText>{item.descripcion}</ThemedText>
-            <ThemedText>Fecha: {new Date(item.fecha).toLocaleString()}</ThemedText>
-            <ThemedText>Duración: {item.duracion} minutos</ThemedText>
-          </Collapsible>
-        )}
-      />
-
-    </ParallaxScrollView>
+    <ScrollView style={styles.container}>
+      {eventos.map((evento) => (
+        <View key={evento.id} style={styles.eventoCard}>
+          <ImageBackground
+            source={{ uri: 'https://www.esneca.com/wp-content/uploads/eventos-sociales.jpg' }} // Reemplaza con la URL de la imagen del evento
+            style={styles.imageBackground}
+            imageStyle={styles.image}
+          >
+            <View style={styles.textContainer}>
+              <Text style={styles.titulo}>{evento.titulo}</Text>
+              <Text style={styles.descripcion}>{evento.descripcion}</Text>
+              <View style={styles.infoContainer}>
+                <Text style={styles.infoText}>{new Date(evento.fecha).toLocaleDateString()}</Text>
+                <Text style={styles.infoText}>{`Duración: ${evento.duracion} minutos`}</Text>
+              </View>
+            </View>
+          </ImageBackground>
+        </View>
+      ))}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#f8f9fa",
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  eventoCard: {
+    marginBottom: 20,
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  imageBackground: {
+    height: 200,
+    justifyContent: "flex-end",
+  },
+  image: {
+    borderRadius: 12,
+  },
+  textContainer: {
+    padding: 16,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+  },
+  titulo: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 4,
+  },
+  descripcion: {
+    fontSize: 14,
+    color: "#dcdcdc",
+    marginBottom: 8,
+  },
+  infoContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  infoText: {
+    fontSize: 12,
+    color: "#dcdcdc",
   },
 });
