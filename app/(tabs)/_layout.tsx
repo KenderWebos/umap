@@ -61,7 +61,7 @@ export default function TabLayout() {
           title: "Map",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
-              name={focused ? "map" : "map-outline"}
+              name={focused ? "home" : "home-outline"}
               color={color}
             />
           ),          
