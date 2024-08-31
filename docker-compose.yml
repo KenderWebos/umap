@@ -1,0 +1,9 @@
+# Para el backend
+services:
+  app:
+    image: node:20.17.0-alpine
+    ports:
+      - 3000:3000
+    volumes:
+      - ./src:/app
+    command: node /app/app.js
